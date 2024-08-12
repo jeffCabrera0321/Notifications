@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import sendEmail
+from .views import sendEmail, sendTextMessage
 
 urlpatterns = [
     path('sendEmail', sendEmail),
+    path('sendTxtMsg', sendTextMessage)
 ]

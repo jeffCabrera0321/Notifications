@@ -12,21 +12,21 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+
 load_dotenv()
+senderInfo = {
+    "userName": os.getenv("username"),
+    "email": os.getenv("email"),
+    "password": os.getenv("password")
+}
 
 
 # Create your views here.
 @api_view(["POST"])
 def sendEmail(request):
-    senderInfo = {
-        "userName": os.getenv("username"),
-        "email": os.getenv("email"),
-        "password": os.getenv("password")
-    }
-
     msg = MIMEMultipart()
-    msg["From"] = os.getenv("email")
-    msg["To"] = request.data["Email"]
+    msg["From"] = os.getenv("email")  # Need to encrypt
+    msg["To"] = request.data["Email"]  # Need to encrypt
     msg["Subject"] = "SmartHomie"
     data = {"status": "Success",
             "name": request.data["Name"],
@@ -50,3 +50,24 @@ def sendEmail(request):
         return Response(data="Fail", status=status.HTTP_403_FORBIDDEN)
     finally:
         server.quit()
+
+
+@api_view(["POST"])
+def sendTextMessage(request):
+    CARRIERS = {
+        "att": "@mms.att.net",
+        "tmobile": "@tmomail.net",
+        "verizon": "@vtext.com",
+        "sprint": "@messaging.sprintpcs.com"
+    }
+    phoneNumber = request.data["phoneNumber"]  # Need to encrypt
+    carrier = CARRIERS[request.data["carrier"]]  # Need to encrypt
+    senderEmail = os.getenv("email")  # Need to encrypt
+    senderPassword = os.getenv("password")  # Need to encrypt
+    recipient = phoneNumber + carrier
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(senderEmail, senderPassword)
+    message = "Success"  # Needs proper message
+
+    server.sendmail(senderEmail, recipient, message)
